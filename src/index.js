@@ -52,6 +52,22 @@ async function handleGetRequest(playerName, env, headers) {
 
 async function handlePostRequest(request, env, headers) {
 	const data = await request.json();
+
+	if (data.role && data.index) {
+		// Get the existing player data
+		const existingPlayerData = await env.HAND_BALL_PLAYER_DATA.get(data.index, 'json');
+
+		if (existingPlayerData) {
+			// Increment the specified role count
+			existingPlayerData[data.role] = (existingPlayerData[data.role] || 0) + 1;
+			await env.HAND_BALL_PLAYER_DATA.put(data.index, JSON.stringify(existingPlayerData));
+			return new Response('Player stats updated', { status: 200, headers });
+		} else {
+			return new Response('Player not found', { status: 404, headers });
+		}
+	}
+
+	// Handle adding a new player
 	await env.HAND_BALL_PLAYER_DATA.put(data.index, JSON.stringify(data));
 	return new Response('Player added/updated', { status: 200, headers });
 }
