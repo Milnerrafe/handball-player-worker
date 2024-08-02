@@ -1,8 +1,7 @@
-export default {
+var src_default = {
 	async fetch(request, env) {
 		const url = new URL(request.url);
 		const path = url.pathname.split('/');
-
 		if (path[1] === 'api') {
 			if (request.method === 'GET') {
 				return handleGetRequest(path[2], env);
@@ -37,3 +36,5 @@ async function handlePostRequest(request, env) {
 	await env.HAND_BALL_PLAYER_DATA.put(data.name, JSON.stringify(data));
 	return new Response('Player added/updated', { status: 200 });
 }
+
+export { src_default as default };
