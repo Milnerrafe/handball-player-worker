@@ -22,7 +22,11 @@ export default {
 
 		if (path[1] === 'api') {
 			if (request.method === 'GET') {
-				return handleGetRequest(path[2], env, headers);
+				if (path[2] === 'leaderboard') {
+					return handleLeaderboardRequest(env, headers);
+				} else {
+					return handleGetRequest(path[2], env, headers);
+				}
 			} else if (request.method === 'POST') {
 				return handlePostRequest(request, env, headers);
 			}
@@ -70,4 +74,18 @@ async function handlePostRequest(request, env, headers) {
 	// Handle adding a new player
 	await env.HAND_BALL_PLAYER_DATA.put(data.index, JSON.stringify(data));
 	return new Response('Player added/updated', { status: 200, headers });
+}
+
+async function handleLeaderboardRequest(env, headers) {
+	const keys = await env.HAND_BALL_PLAYER_DATA.list();
+	let players = [];
+	for (let key of keys.keys) {
+		const playerData = await env.HAND_BALL_PLAYER_DATA.get(key.name, 'json');
+		players.push(playerData);
+	}
+
+	// Sort players by king count in descending order
+	players.sort((a, b) => b.king - a.king);
+
+	return new Response(JSON.stringify(players), { status: 200, headers });
 }
