@@ -1,0 +1,1 @@
+The git repository for the backend code for the Handball player tracking project. This project contains the code for a Cloudfair worker which provides the backend for the Handball project. Long commit to this project and uploads to GitHub. This project is built and deployed to Cloudflare.
