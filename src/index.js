@@ -1,4 +1,4 @@
-var src_default = {
+export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
 		const path = url.pathname.split('/');
@@ -33,8 +33,25 @@ async function handleGetRequest(playerName, env) {
 
 async function handlePostRequest(request, env) {
 	const data = await request.json();
-	await env.HAND_BALL_PLAYER_DATA.put(data.name, JSON.stringify(data));
+	const existingPlayer = await env.HAND_BALL_PLAYER_DATA.get(data.name, 'json');
+	if (existingPlayer) {
+		// Update existing player
+		existingPlayer[data.role]++;
+		await env.HAND_BALL_PLAYER_DATA.put(data.name, JSON.stringify(existingPlayer));
+	} else {
+		// Add new player
+		await env.HAND_BALL_PLAYER_DATA.put(
+			data.name,
+			JSON.stringify({
+				name: data.name,
+				img: data.img,
+				king: 0,
+				pawn: 0,
+				knight: 0,
+				queen: 0,
+				[data.role]: 1,
+			}),
+		);
+	}
 	return new Response('Player added/updated', { status: 200 });
 }
-
-export { src_default as default };
