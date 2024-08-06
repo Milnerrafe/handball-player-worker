@@ -36,9 +36,9 @@ export default {
 	},
 };
 
-async function handleGetRequest(playerName, env, headers) {
-	if (playerName) {
-		const playerData = await env.HAND_BALL_PLAYER_DATA.get(playerName, 'json');
+async function handleGetRequest(playerIndex, env, headers) {
+	if (playerIndex) {
+		const playerData = await env.HAND_BALL_PLAYER_DATA.get(playerIndex, 'json');
 		if (playerData) {
 			return new Response(JSON.stringify(playerData), { status: 200, headers });
 		}
@@ -63,9 +63,13 @@ async function handlePostRequest(request, env, headers) {
 
 		if (existingPlayerData) {
 			// Increment the specified role count
-			existingPlayerData[data.role] = (existingPlayerData[data.role] || 0) + 1;
-			await env.HAND_BALL_PLAYER_DATA.put(data.index, JSON.stringify(existingPlayerData));
-			return new Response('Player stats updated', { status: 200, headers });
+			if (data.role === 'king' || data.role === 'queen') {
+				existingPlayerData[data.role] = (existingPlayerData[data.role] || 0) + 1;
+				await env.HAND_BALL_PLAYER_DATA.put(data.index, JSON.stringify(existingPlayerData));
+				return new Response('Player stats updated', { status: 200, headers });
+			} else {
+				return new Response('Invalid role', { status: 400, headers });
+			}
 		} else {
 			return new Response('Player not found', { status: 404, headers });
 		}
@@ -84,8 +88,8 @@ async function handleLeaderboardRequest(env, headers) {
 		players.push(playerData);
 	}
 
-	// Sort players by king count in descending order
-	players.sort((a, b) => b.king - a.king);
+	// Sort players by total score in descending order
+	players.sort((a, b) => b.king * 2 + b.queen - (a.king * 2 + a.queen));
 
 	return new Response(JSON.stringify(players), { status: 200, headers });
 }
